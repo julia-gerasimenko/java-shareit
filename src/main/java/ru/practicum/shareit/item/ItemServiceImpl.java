@@ -55,6 +55,10 @@ public class ItemServiceImpl implements ItemService {
             log.info("Позиция с id = {} не существует", itemId);
             throw new NotFoundException("Позиция с id = " + itemId + "не существует");
         });
+        if (!updatedItem.getOwner().getId().equals(userId)) {
+            log.info("Позиция с id = {} не найдена", itemId);
+            throw new NotFoundException("Позиция с id " + itemId + " не найдена");
+        }
         if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
             updatedItem.setName(itemDto.getName());
         }
@@ -70,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItemByText(String text, Long userId) {
-        if (text.isBlank()) {
+        if (text.isBlank() || userId == null) {
             return List.of();
         }
         List<ItemDto> items = new ArrayList<>();
