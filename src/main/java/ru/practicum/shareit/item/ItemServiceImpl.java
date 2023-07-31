@@ -41,33 +41,31 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getItemById(Long itemId, Long userId) {
-        Optional<Item> item = itemRepository.getItemById(itemId, userId);
-        if (item.isEmpty()) {
+        Item item = itemRepository.getItemById(itemId, userId).orElseThrow(() -> {
             log.info("Позиция с id = {} не существует", itemId);
             throw new NotFoundException("Позиция с id = " + itemId + "не существует");
-        }
+        });
         log.info("Позиция с id = {} загружена", itemId);
-        return ItemMapper.itemToItemDto(item.get());
+        return ItemMapper.itemToItemDto(item);
     }
 
     @Override
     public ItemDto updateItemById(ItemDto itemDto, Long itemId, Long userId) {
-        Optional<Item> updatedItem = itemRepository.getItemById(itemId, userId);
-        if (!updatedItem.get().getOwner().getId().equals(userId)) {
-            log.info("Позиция с id = {} не найдена", itemId);
-            throw new NotFoundException("Позиция с id " + itemId + " не найдена");
-        }
+        Item updatedItem = itemRepository.getItemById(itemId, userId).orElseThrow(() -> {
+            log.info("Позиция с id = {} не существует", itemId);
+            throw new NotFoundException("Позиция с id = " + itemId + "не существует");
+        });
         if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
-            updatedItem.get().setName(itemDto.getName());
+            updatedItem.setName(itemDto.getName());
         }
         if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {
-            updatedItem.get().setDescription(itemDto.getDescription());
+            updatedItem.setDescription(itemDto.getDescription());
         }
         if (itemDto.getAvailable() != null) {
-            updatedItem.get().setAvailable(itemDto.getAvailable());
+            updatedItem.setAvailable(itemDto.getAvailable());
         }
         log.info("Позиция с id = {} успешно обновлена", itemId);
-        return ItemMapper.itemToItemDto(updatedItem.get());
+        return ItemMapper.itemToItemDto(updatedItem);
     }
 
     @Override
