@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -54,8 +55,8 @@ public class ItemRepositoryImpl implements ItemRepository {
         boolean nameValidation;
         boolean descriptionValidation;
         for (Item item : items.values()) {
-            nameValidation = item.getName().toLowerCase().contains(text);
-            descriptionValidation = item.getDescription().toLowerCase().contains(text);
+            nameValidation = StringUtils.containsIgnoreCase(item.getName(), text);
+            descriptionValidation = StringUtils.containsIgnoreCase(item.getDescription(), text);
             if ((nameValidation || descriptionValidation) && item.getAvailable()) {
                 itemList.add(item);
             }
