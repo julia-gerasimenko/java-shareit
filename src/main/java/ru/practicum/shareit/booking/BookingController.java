@@ -46,4 +46,5 @@ public class BookingController {
                                      @RequestParam Boolean approved) {
         return bookingService.approveBooking(id, bookingId, approved);
     }
+
 }
