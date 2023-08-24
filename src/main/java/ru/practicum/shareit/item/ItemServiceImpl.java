@@ -74,12 +74,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto updateItemById(ItemShortDto itemShortDto, Long itemId, Long userId) {
         Item updatedItem = itemRepository.findById(itemId).orElseThrow(() -> {
-            log.info("Позиция с id = {} не существует", itemId);
-            throw new NotFoundException("Позиция с id = " + itemId + "не существует");
+            log.info("Item with id = {} does not exist", itemId);
+            throw new NotFoundException("Item with id = " + itemId + "does not exist");
         });
         if (!updatedItem.getOwner().getId().equals(userId)) {
-            log.info("Позиция с id = {} не найдена", itemId);
-            throw new NotFoundException("Позиция с id " + itemId + " не найдена");
+            log.info("Item with id = {} не найдена", itemId);
+            throw new NotFoundException("Item with id " + itemId + " is not found");
         }
         if (itemShortDto.getName() != null && !itemShortDto.getName().isBlank()) {
             updatedItem.setName(itemShortDto.getName());
@@ -90,7 +90,7 @@ public class ItemServiceImpl implements ItemService {
         if (itemShortDto.getAvailable() != null) {
             updatedItem.setAvailable(itemShortDto.getAvailable());
         }
-        log.info("Позиция с id = {} успешно обновлена", itemId);
+        log.info("Item with id = {} is updated", itemId);
         return itemToItemDto(itemRepository.save(updatedItem));
     }
 
