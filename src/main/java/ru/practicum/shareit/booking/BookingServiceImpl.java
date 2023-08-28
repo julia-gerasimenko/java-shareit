@@ -15,7 +15,9 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.State.validateState;
@@ -77,33 +79,18 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getAllBookingByState(Long id, String stateString) {
         validateUser(id);
-        List<Booking> bookingList;
         LocalDateTime time = LocalDateTime.now();
 
         State state = validateState(stateString);
-        switch (state) {
-            case ALL:
-                bookingList = bookingRepository.findAllByBookerId(id, SORT_BY_DESC);
-                break;
-            case CURRENT:
-                bookingList = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(id, time, time, SORT_BY_DESC);
-                break;
-            case PAST:
-                bookingList = bookingRepository.findAllByBookerIdAndEndBefore(id, time, SORT_BY_DESC);
-                break;
-            case FUTURE:
-                bookingList = bookingRepository.findAllByBookerIdAndStartAfter(id, time, SORT_BY_DESC);
-                break;
-            case WAITING:
-                bookingList = bookingRepository.findAllByBookerIdAndStatus(id, Status.WAITING, SORT_BY_DESC);
-                break;
-            case REJECTED:
-                bookingList = bookingRepository.findAllByBookerIdAndStatus(id, Status.REJECTED, SORT_BY_DESC);
-                break;
-            default:
-                bookingList = Collections.emptyList();
-        }
+        Map<String, List<Booking>> handlers = new HashMap<>();
+        handlers.put("ALL", bookingRepository.findAllByBookerId(id, SORT_BY_DESC));
+        handlers.put("CURRENT", bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(id, time, time, SORT_BY_DESC));
+        handlers.put("PAST", bookingRepository.findAllByBookerIdAndEndBefore(id, time, SORT_BY_DESC));
+        handlers.put("FUTURE", bookingRepository.findAllByBookerIdAndStartAfter(id, time, SORT_BY_DESC));
+        handlers.put("WAITING", bookingRepository.findAllByBookerIdAndStatus(id, Status.WAITING, SORT_BY_DESC));
+        handlers.put("REJECTED", bookingRepository.findAllByBookerIdAndStatus(id, Status.REJECTED, SORT_BY_DESC));
 
+        List<Booking> bookingList = handlers.get(stateString);
         log.info("Get booking with state  = {}", state);
         return bookingList.stream()
                 .map(BookingMapper::bookingToBookingDto)

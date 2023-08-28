@@ -97,11 +97,12 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     @Override
     public List<ItemDto> searchItemByText(String stringText) {
-        String text = stringText.toLowerCase();
-        if (text.isBlank()) {
+        if (stringText == null || stringText.isBlank()) {
             return List.of();
         }
-        Collection<Item> items = itemRepository.findByNameOrDescriptionAndAvailable(text);
+        String text = stringText.toLowerCase();
+
+        Collection<Item> items = itemRepository.findByParameters(text);
         log.info("Get all items with text {}", text);
         return getItemList(items);
     }
