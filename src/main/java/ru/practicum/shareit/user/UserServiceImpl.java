@@ -13,14 +13,15 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.user.UserMapper.*;
+import static ru.practicum.shareit.user.UserMapper.userDtoToUser;
+import static ru.practicum.shareit.user.UserMapper.userToUserDto;
 
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class UserServiceDaoImpl implements UserService {
+public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final ItemRepository itemRepository;
 
