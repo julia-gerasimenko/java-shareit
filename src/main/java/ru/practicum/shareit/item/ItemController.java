@@ -1,25 +1,26 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemShortDto;
 
 import javax.validation.Valid;
 import java.util.List;
 
+import static ru.practicum.shareit.util.Constants.REQUEST_HEADER_USER_ID;
+
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
-@Slf4j
 public class ItemController {
     private final ItemService service;
-    public static final String REQUEST_HEADER_USER_ID = "X-Sharer-User-Id";
 
     @PostMapping
-    public ItemDto createItem(@Valid @RequestBody ItemDto itemDto,
+    public ItemDto createItem(@Valid @RequestBody ItemShortDto itemShortDto,
                               @RequestHeader(REQUEST_HEADER_USER_ID) Long userId) {
-        return service.createItem(itemDto, userId);
+        return service.createItem(itemShortDto, userId);
     }
 
     @GetMapping("/{itemId}")
@@ -34,21 +35,22 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItemById(@RequestBody ItemDto itemDto,
+    public ItemDto updateItemById(@RequestBody ItemShortDto itemShortDto,
                                   @PathVariable Long itemId,
                                   @RequestHeader(REQUEST_HEADER_USER_ID) Long userId) {
-        return service.updateItemById(itemDto, itemId, userId);
+        return service.updateItemById(itemShortDto, itemId, userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItemByText(@RequestParam String text,
-                                          @RequestHeader(REQUEST_HEADER_USER_ID) Long userId) {
-        return service.searchItemByText(text.toLowerCase(), userId);
+    public List<ItemDto> searchItemByText(@RequestParam String text) {
+        return service.searchItemByText(text);
     }
 
-    @DeleteMapping("/{itemId}")
-    public ItemDto deleteItemById(@PathVariable Long itemId,
-                                  @RequestHeader(REQUEST_HEADER_USER_ID) Long userId) {
-        return service.removeItemById(itemId, userId);
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@PathVariable Long itemId,
+                                 @RequestHeader(REQUEST_HEADER_USER_ID) Long userId,
+                                 @Valid @RequestBody CommentDto commentDto) {
+        return service.addComment(commentDto, userId, itemId);
     }
 }
