@@ -5,7 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 
 @Data
-@EqualsAndHashCode(exclude = {"name"})
+@EqualsAndHashCode(of = {"id", "email"})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

@@ -8,7 +8,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Data
-@EqualsAndHashCode (exclude = {"start", "end", "item", "booker", "status"})
+@EqualsAndHashCode(of = {"id"})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

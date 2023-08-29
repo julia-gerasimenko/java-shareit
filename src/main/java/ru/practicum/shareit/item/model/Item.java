@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.User;
 import javax.persistence.*;
 
 @Data
-@EqualsAndHashCode(exclude = {"name", "description", "available", "owner"})
+@EqualsAndHashCode(of = {"id"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
