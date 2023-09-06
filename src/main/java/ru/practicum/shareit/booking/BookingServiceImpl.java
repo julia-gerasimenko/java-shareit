@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -20,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
 import static ru.practicum.shareit.booking.State.validateState;
 import static ru.practicum.shareit.booking.dto.BookingMapper.bookingToBookingDto;
 import static ru.practicum.shareit.booking.dto.BookingMapper.bookingToBookingShortDto;
-import static ru.practicum.shareit.util.Constants.SORT_BY_DESC;
 
 
 @Service
@@ -77,18 +80,22 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getAllBookingByState(Long id, String stateString) {
+    public List<BookingDto> getAllBookingByState(Long id, String stateString, int from, int size) {
+        if (from < 0 || size < 1) {
+            throw new IllegalArgumentException("First page can't be less than zero. Check the quantity of pages chosen.");
+        }
         validateUser(id);
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
         LocalDateTime time = LocalDateTime.now();
 
         State state = validateState(stateString);
         Map<String, List<Booking>> handlers = new HashMap<>();
-        handlers.put("ALL", bookingRepository.findAllByBookerId(id, SORT_BY_DESC));
-        handlers.put("CURRENT", bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(id, time, time, SORT_BY_DESC));
-        handlers.put("PAST", bookingRepository.findAllByBookerIdAndEndBefore(id, time, SORT_BY_DESC));
-        handlers.put("FUTURE", bookingRepository.findAllByBookerIdAndStartAfter(id, time, SORT_BY_DESC));
-        handlers.put("WAITING", bookingRepository.findAllByBookerIdAndStatus(id, Status.WAITING, SORT_BY_DESC));
-        handlers.put("REJECTED", bookingRepository.findAllByBookerIdAndStatus(id, Status.REJECTED, SORT_BY_DESC));
+        handlers.put("ALL", bookingRepository.findAllByBookerId(id, pageable));
+        handlers.put("CURRENT", bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(id, time, time, pageable));
+        handlers.put("PAST", bookingRepository.findAllByBookerIdAndEndBefore(id, time, pageable));
+        handlers.put("FUTURE", bookingRepository.findAllByBookerIdAndStartAfter(id, time, pageable));
+        handlers.put("WAITING", bookingRepository.findAllByBookerIdAndStatus(id, Status.WAITING, pageable));
+        handlers.put("REJECTED", bookingRepository.findAllByBookerIdAndStatus(id, Status.REJECTED, pageable));
 
         List<Booking> bookingList = handlers.get(stateString);
         log.info("Get booking with state  = {}", state);
@@ -99,30 +106,35 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getAllOwnersBookingByState(Long id, String stateString) {
+    public List<BookingDto> getAllOwnersBookingByState(Long id, String stateString, int from, int size) {
+        if (from < 0 || size < 1) {
+            throw new IllegalArgumentException("First page can't be less than zero. Check the quantity of pages chosen.");
+        }
+
         validateUser(id);
         List<Booking> bookingList;
         LocalDateTime now = LocalDateTime.now();
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(DESC, "start"));
 
         State state = validateState(stateString);
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findAllByItemOwnerId(id, SORT_BY_DESC);
+                bookingList = bookingRepository.findAllByItemOwnerId(id, pageable);
                 break;
             case PAST:
-                bookingList = bookingRepository.findAllByItemOwnerIdAndEndBefore(id, now, SORT_BY_DESC);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndEndBefore(id, now, pageable);
                 break;
             case CURRENT:
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfter(id, now, now, SORT_BY_DESC);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfter(id, now, now, pageable);
                 break;
             case FUTURE:
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStartAfter(id, now, SORT_BY_DESC);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStartAfter(id, now, pageable);
                 break;
             case WAITING:
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(id, Status.WAITING, SORT_BY_DESC);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(id, Status.WAITING, pageable);
                 break;
             case REJECTED:
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(id, Status.REJECTED, SORT_BY_DESC);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(id, Status.REJECTED, pageable);
                 break;
             default:
                 bookingList = Collections.emptyList();

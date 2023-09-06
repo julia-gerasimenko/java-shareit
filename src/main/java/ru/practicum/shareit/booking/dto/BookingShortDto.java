@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 import static ru.practicum.shareit.util.Constants.TIME_PATTERN;
 
 @Data
+@Getter
+@Setter
 @Builder
 public class BookingShortDto {
 
