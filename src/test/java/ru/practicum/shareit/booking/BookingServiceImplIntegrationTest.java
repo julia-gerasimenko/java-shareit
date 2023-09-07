@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,9 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Transactional
@@ -91,5 +95,22 @@ public class BookingServiceImplIntegrationTest {
                 .build();
 
         savedBookingAnother = bookingRepository.save(bookingAnother);
+    }
+
+    @Test
+    public void getAllOwnersBookingByStateTest() {
+        long userId = savedUser.getId();
+        int from = 0;
+        int size = 10;
+        List<BookingDto> bookingDtoList =
+                bookingService.getAllOwnersBookingByState(userId, String.valueOf(State.ALL), from, size);
+
+        assertEquals(2, bookingDtoList.size());
+        assertEquals(savedBooking.getId(), bookingDtoList.get(0).getId());
+        assertEquals(savedBookingAnother.getId(), bookingDtoList.get(1).getId());
+        assertEquals(savedBooking.getStart(), bookingDtoList.get(0).getStart());
+        assertEquals(savedBooking.getEnd(), bookingDtoList.get(0).getEnd());
+        assertEquals(savedBookingAnother.getStart(), bookingDtoList.get(1).getStart());
+        assertEquals(savedBookingAnother.getEnd(), bookingDtoList.get(1).getEnd());
     }
 }

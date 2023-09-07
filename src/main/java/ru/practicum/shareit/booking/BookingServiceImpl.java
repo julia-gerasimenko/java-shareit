@@ -76,6 +76,9 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getAllBookingByState(Long id, String stateString, int from, int size) {
+        if (from < 0 || size < 1) {
+            throw new IllegalArgumentException("Check the starting page and quantity of pages to display");
+        }
         validateUser(id);
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
         List<Booking> bookingList;

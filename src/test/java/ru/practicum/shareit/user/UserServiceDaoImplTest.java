@@ -117,6 +117,26 @@ class UserServiceDaoImplTest {
     }
 
     @Test
+    public void updateUserNameByIdTest() {
+        Long userId = userAnother.getId();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userAnother));
+        user.setName("newname");
+        UserDto actual = userService.updateUserById(userId, UserMapper.userToUserDto(userAnother));
+
+        assertEquals(userAnother.getName(), actual.getName());
+    }
+
+    @Test
+    public void updateUserEmailByIdTest() {
+        Long userId = userAnother.getId();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userAnother));
+        user.setName("newemail@test.testz");
+        UserDto actual = userService.updateUserById(userId, UserMapper.userToUserDto(userAnother));
+
+        assertEquals(userAnother.getName(), actual.getName());
+    }
+
+    @Test
     void updateUserByIdWithWrongEmailValidationTest() {
         UserDto userAnotherDto = new UserDto(999L, "AnotherName", "useranother@test.testz");
         when(userRepository.findById(userAnotherDto.getId())).thenReturn(Optional.empty());
@@ -140,5 +160,12 @@ class UserServiceDaoImplTest {
         when(userRepository.findById(userDtoThird.getId())).thenThrow(AlreadyExistsException.class);
         Long userId = 999L;
         assertThatThrownBy(() -> userService.updateUserById(userId, userDto)).isInstanceOf(AlreadyExistsException.class);
+    }
+
+    @Test
+    public void removeUserByIdTest() {
+        doNothing().when(userRepository).deleteById(anyLong());
+        userService.removeUserById(userAnotherDto.getId());
+        verify(userRepository, times(1)).deleteById(2L);
     }
 }
