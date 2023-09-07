@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.dto;
+package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -8,9 +8,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.booking.BookingController;
-import ru.practicum.shareit.booking.BookingServiceImpl;
-import ru.practicum.shareit.booking.Status;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,8 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +33,82 @@ class BookingControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private BookingServiceImpl bookingService;
+
+    @SneakyThrows
+    @Test
+    void createBookingTest() {
+        Long userId = 1L;
+        Long itemId = 1L;
+        BookingShortDto createBookingDto = new BookingShortDto(userId, start, end, itemId);
+        BookingDto bookingDto = new BookingDto(1L, start, end, Status.WAITING, null, null);
+        when(bookingService.createBooking(anyLong(), any())).thenReturn(bookingDto);
+
+        String result = mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", userId)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(createBookingDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertEquals(objectMapper.writeValueAsString(bookingDto), result);
+    }
+
+    @SneakyThrows
+    @Test
+    void createBookingWhenEndInPastValidationTest() {
+        Long userId = 1L;
+        Long itemId = 1L;
+        BookingShortDto createBookingDto = new BookingShortDto(userId, start, end.minusDays(7), itemId);
+        BookingDto bookingDto = new BookingDto(1L, start, end.minusDays(7), Status.WAITING, null, null);
+        when(bookingService.createBooking(anyLong(), any())).thenReturn(bookingDto);
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", userId)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(createBookingDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(bookingService, never()).createBooking(anyLong(), any());
+    }
+
+    @SneakyThrows
+    @Test
+    void createBookingWhenStartIsNullValidationTest() {
+        Long userId = 1L;
+        Long itemId = 1L;
+        BookingShortDto createBookingDto = new BookingShortDto(userId, null, end, itemId);
+        BookingDto bookingDto = new BookingDto(1L, null, end, Status.WAITING, null, null);
+        when(bookingService.createBooking(anyLong(), any())).thenReturn(bookingDto);
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", userId)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(createBookingDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(bookingService, never()).createBooking(anyLong(), any());
+    }
+
+    @SneakyThrows
+    @Test
+    void createBookingWhenEndIsNullValidationTest() {
+        Long userId = 1L;
+        Long itemId = 1L;
+        BookingShortDto createBookingDto = new BookingShortDto(userId, start, null, itemId);
+        BookingDto bookingDto = new BookingDto(1L, start, null, Status.WAITING, null, null);
+        when(bookingService.createBooking(anyLong(), any())).thenReturn(bookingDto);
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", userId)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(createBookingDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(bookingService, never()).createBooking(anyLong(), any());
+    }
 
     @SneakyThrows
     @Test
