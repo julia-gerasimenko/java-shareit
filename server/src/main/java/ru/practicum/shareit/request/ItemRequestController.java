@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestShortDto;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ItemRequestController {
 
     @PostMapping()
     public ItemRequestDto createRequest(@RequestHeader(REQUEST_HEADER_USER_ID) Long id,
-                                        @RequestBody ItemRequestShortDto itemRequestShortDto) {
+                                        @RequestBody @Valid ItemRequestShortDto itemRequestShortDto) {
         log.debug("Create request");
         return requestService.createRequest(id, itemRequestShortDto);
     }
